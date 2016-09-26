@@ -2,7 +2,6 @@ import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
 
-//dlo
 class TCS{
     private static final int GN = 25;
     private static ArrayList<TRSNode> nodes = new ArrayList<TRSNode>();
