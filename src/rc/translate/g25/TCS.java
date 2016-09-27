@@ -1,23 +1,24 @@
+package rc.translate.g25;
+
+
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
 
 class TCS{
-    private static final int GN = 25;
+    
     private static ArrayList<TRSNode> nodes = new ArrayList<TRSNode>();
     
     public static void main(String args[]) throws Exception{
-        int TCSport = 58000 + GN;
+    	
+        int TCSport = 58025;
         
-        if(args.length >= 2){
-            for(int i = 0; i < args.length-1; i++){
-                if(args[i].equals("-p")){
-                    TCSport = Integer.parseInt(args[i+1]);
-                }
-            }
+        if(args.length==2 && args[0].equals("-p")){
+            TCSport = Integer.parseInt(args[1]);
         }
+	    
         	 
-        DatagramSocket serverSocket = new DatagramSocket(TCSport);
+        DatagramsSocket serverSocket = new DatagramSocket(TCSport);
 
         byte[] receiveData = new byte[1024];
         byte[] sendData = new byte[1024];
