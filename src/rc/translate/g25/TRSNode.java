@@ -4,16 +4,13 @@ import java.net.InetAddress;
 public class TRSNode {
 	private String language;
 	private InetAddress address;
-	private String name;
 	private int port;
 	private int TCSport;
 	
-	public TRSNode(String language, InetAddress address, String name,int port, int TCSport){
+	public TRSNode(String language, InetAddress address,int port){
 		this.language = language;
 		this.address = address;
-		this.name=name;
 		this.port = port;
-		this.TCSport=TCSport;
 	}
 	
 
@@ -28,13 +25,7 @@ public class TRSNode {
 	public int getPort(){
 		return this.port;
 	}
-	public String getName(){
-		return this.name;
-	}
-	public int getTCS(){
-		return this.TCSport;
-	}
-
+	
 	public void setPort(int porto) {
 		port=porto;
 		
@@ -47,13 +38,6 @@ public class TRSNode {
 		this.address=address;
 		
 	}
-	public void setName(String name) {
-		this.name=name;
-		
-	}
 
-	public void setTCS(int TCS) {
-		this.TCSport= TCS;
-		
-	}
+
 }

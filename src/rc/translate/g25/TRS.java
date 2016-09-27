@@ -10,35 +10,35 @@ public class TRS {
 	         new BufferedReader(new InputStreamReader(System.in));
 	      
 	      DatagramSocket clientSocket = new DatagramSocket();
-	      InetAddress IPAddress = InetAddress.getByName("localhost");
+	      
 	      byte[] sendData = new byte[1024];
 	      byte[] receiveData = new byte[1024];
 	      
 	      String sentence = inFromUser.readLine();
 	      String[]splited= sentence.split(" ");
-	      TRSNode node = new TRSNode(splited[0],IPAddress,"nome da maquina",59000,58025);
+	      int TRSport = 59000;
+	      InetAddress IPAddress = InetAddress.getByName("localhost");
+	      int TCSport = 58025;
+	      String language=splited[0];
 	      	for(int i=1; i<splited.length -1;i++){
 	      		System.out.println(splited[i]);
 	      		if(splited[i].equals("-p")){
-	      			node.setPort(Integer.parseInt(splited[i+1]));
-	      			i++;
+	      			TRSport=Integer.parseInt(splited[++i]);
 	      		}
 	      		if(splited[i].equals("-n")){
-	      			node.setName(splited[i+1]);
-	      			i++;
+	      			IPAddress=InetAddress.getByName(splited[++i]);
 	      		}
 	      		if(splited[i].equals("-e")){
-	      			node.setTCS(Integer.parseInt(splited[i+1]));
-	      			i++;
+	      			TCSport=Integer.parseInt(splited[++i]);
 	      		}
 	      		
 	      	}
 	      	
 	      String tosend= new String();
-	      tosend="SRG "+node.getLanguage()+" "+node.getName()+" "+node.getPort();
+	      tosend="SRG "+ language +" "+IPAddress+" "+TCSport;
 	      System.out.println(tosend);
 	      sendData = tosend.getBytes();
-	      DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, 9876);
+	      DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, TCSport);
 	      clientSocket.send(sendPacket);
 	      
 	      
