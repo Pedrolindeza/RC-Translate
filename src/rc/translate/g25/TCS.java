@@ -18,7 +18,7 @@ class TCS{
         }
 	    
         	 
-        DatagramsSocket serverSocket = new DatagramSocket(TCSport);
+        DatagramSocket serverSocket = new DatagramSocket(TCSport);
 
         byte[] receiveData = new byte[1024];
         byte[] sendData = new byte[1024];
