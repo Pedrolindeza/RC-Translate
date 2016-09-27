@@ -6,14 +6,17 @@ public class TRSNode {
 	private InetAddress address;
 	private String name;
 	private int port;
+	private int TCSport;
 	
-	public TRSNode(String language, InetAddress address, String name,int port){
+	public TRSNode(String language, InetAddress address, String name,int port, int TCSport){
 		this.language = language;
 		this.address = address;
 		this.name=name;
 		this.port = port;
+		this.TCSport=TCSport;
 	}
 	
+
 	public String getLanguage(){
 		return this.language;
 	}
@@ -27,6 +30,9 @@ public class TRSNode {
 	}
 	public String getName(){
 		return this.name;
+	}
+	public int getTCS(){
+		return this.TCSport;
 	}
 
 	public void setPort(int porto) {
@@ -43,6 +49,11 @@ public class TRSNode {
 	}
 	public void setName(String name) {
 		this.name=name;
+		
+	}
+
+	public void setTCS(int TCS) {
+		this.TCSport= TCS;
 		
 	}
 }

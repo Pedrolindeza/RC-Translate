@@ -15,21 +15,43 @@ public class TRS {
 	      byte[] receiveData = new byte[1024];
 	      
 	      String sentence = inFromUser.readLine();
-	      TRSNode node = new TRSNode("?",IPAddress,"nome da maquina",59000);
-	      	for(String s: sentence.split(" ")){
-	      		System.out.println(s);
-	      		if(s.equals("-p")){
-	      			String porto = new String();
-	      			node.setPort(Integer.parseInt(sentence.split(" ")));
+	      String[]splited= sentence.split(" ");
+	      TRSNode node = new TRSNode(splited[0],IPAddress,"nome da maquina",59000,58025);
+	      	for(int i=1; i<splited.length -1;i++){
+	      		System.out.println(splited[i]);
+	      		if(splited[i].equals("-p")){
+	      			node.setPort(Integer.parseInt(splited[i+1]));
+	      			i++;
+	      		}
+	      		if(splited[i].equals("-n")){
+	      			node.setName(splited[i+1]);
+	      			i++;
+	      		}
+	      		if(splited[i].equals("-e")){
+	      			node.setTCS(Integer.parseInt(splited[i+1]));
+	      			i++;
 	      		}
 	      		
 	      	}
-	      sendData = sentence.getBytes();
+	      	
+	      String tosend= new String();
+	      tosend="SRG "+node.getLanguage()+" "+node.getName()+" "+node.getPort();
+	      System.out.println(tosend);
+	      sendData = tosend.getBytes();
 	      DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, 9876);
 	      clientSocket.send(sendPacket);
+	      
+	      
 	      DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 	      clientSocket.receive(receivePacket);
 	      String modifiedSentence = new String(receivePacket.getData());
+	      String[] msg = modifiedSentence.split(" ");
+	      if (msg[1]=="OK"){
+	    	  //fork e derivados
+	      }
+	      else{//vai tudo abaixo
+	    	  
+	      }
 	      System.out.println("FROM SERVER:" + modifiedSentence);
 	      clientSocket.close();
 	   }
