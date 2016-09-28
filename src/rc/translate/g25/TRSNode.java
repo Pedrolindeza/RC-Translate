@@ -1,5 +1,11 @@
 package rc.translate.g25;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.InetAddress;
+import java.net.Socket;
 
 public class TRSNode {
 	private String language;
@@ -26,18 +32,29 @@ public class TRSNode {
 		return this.port;
 	}
 	
-	public void setPort(int porto) {
-		port=porto;
+	public void setPort(int port) {
+		this.port=port;
 		
 	}
+	
 	public void setLanguage(String language) {
 		this.language=language;
 		
 	}
+	
 	public void setAddress(InetAddress address) {
 		this.address=address;
 		
 	}
 
-
+	public String sendTCPMessage(String message) throws IOException{
+		Socket socket = new Socket(this.address, this.port);
+		
+		DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+		BufferedReader output = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		dos.writeBytes(message);
+		
+		socket.close();
+		return output.readLine();
+	}
 }

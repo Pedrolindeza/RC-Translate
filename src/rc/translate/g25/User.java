@@ -14,14 +14,14 @@ import java.util.Scanner;
 public class User {
 	private static String TCSName = "127.0.0.1";
 	private static int TCSport = 58025;
-	private static ArrayList<String> languagesCache;
+	private static ArrayList<String> languagesCache = null;
 	
 	private static ArrayList<String> getLanguages() throws IOException{
 		ArrayList<String> languages = new ArrayList<String>();
 		
 		String response = sendUDPMessage("ULQ" + "\n");
 		
-		String[] split = response.split(" ");
+		String[] split = response.replace("\n","").split(" ");
 		if(split[0].equals("ULR")){
 			for(int i = 2; i < split.length; i++)
 				languages.add(split[i]);
@@ -36,9 +36,10 @@ public class User {
 		String response = sendUDPMessage("UNQ " + language + "\n");
 		TRSNode node = null;
 		
-		String[] split = response.split(" ");
-		if(split[0].equals("UNQ") && split.length == 4){
-			node = new TRSNode(split[1], InetAddress.getByName(split[2]), Integer.parseInt(split[3]));
+		String[] split = response.replace("\n","").split(" ");
+		
+		if(split[0].equals("UNR") && split.length == 3){
+			node = new TRSNode(language, InetAddress.getByName(split[1]), Integer.parseInt(split[2]));
 		}
 		
 		return node;
@@ -56,31 +57,6 @@ public class User {
 		sendData = message.getBytes();
 		
 		DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, TCSport);
-		clientSocket.send(sendPacket);
-		
-		DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-	    clientSocket.receive(receivePacket);
-	    
-	    String response = new String(receivePacket.getData());
-	    response = response.substring(0, response.indexOf(0));
-	    
-	    clientSocket.close();
-	    
-	    return response;
-	}
-	
-	private static String sendTCPMessage(TRSNode node, String message) throws IOException{
-		InetAddress address = node.getAddress();
-		
-		DatagramSocket clientSocket = new DatagramSocket();
-		byte[] sendData = new byte[message.length()];
-		byte[] receiveData = new byte[1024];
-		
-    	java.util.Arrays.fill(receiveData, (byte) 0);
-		
-		sendData = message.getBytes();
-		
-		DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, node.getPort());
 		clientSocket.send(sendPacket);
 		
 		DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
@@ -115,17 +91,21 @@ public class User {
         	}
         	else if(split[0].equals("request")){
         		if(split.length < 4){
-        			System.out.println("REQUEST: ERROR");
+        			System.out.println("REQUEST: Arguments error");
+        		}
+        		else if(languagesCache == null){
+        			System.out.println("REQUEST: Languages have not been fetched yet, type 'list' to fetch them");
         		}
         		else{
-        			String language = languagesCache.get(Integer.getInteger(split[1])-1);
+        			String language = languagesCache.get(Integer.parseInt(split[1])-1);
+        			System.out.println(language);
         			TRSNode node = getTRSNode(language);
         			
-        			System.out.println(node.getAddress().getHostAddress() + node.getPort());
+        			System.out.println(node.getAddress().getHostAddress() + " " + node.getPort());
         		}
         	}
         	else{
-        		System.out.println("Invalid command");
+        		System.out.println("Unknown command");
         	}
         }
 	}
