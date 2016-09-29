@@ -6,13 +6,10 @@ import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 public class User {
-	private static String TCSName = "127.0.0.1";
+	private static String TCSname = "127.0.0.1";
 	private static int TCSport = 58025;
 	private static ArrayList<String> languagesCache = null;
 	
@@ -32,7 +29,7 @@ public class User {
 		return languages;
 	}
 	
-	private static TRSNode getTRSNode(String language) throws IOException{
+	private static TRSNode getTRSNode(String language) throws IOException, UNREOFException, UNRERRException{
 		String response = sendUDPMessage("UNQ " + language + "\n");
 		TRSNode node = null;
 		
@@ -41,12 +38,18 @@ public class User {
 		if(split[0].equals("UNR") && split.length == 3){
 			node = new TRSNode(language, InetAddress.getByName(split[1]), Integer.parseInt(split[2]));
 		}
+		if(split[0].equals("UNR") && split.length > 1 && split[1].equals("EOF")){
+			throw new UNREOFException();
+		}
+		if(split[0].equals("UNR") && split.length > 1 && split[1].equals("ERR")){
+			throw new UNRERRException();
+		}
 		
 		return node;
 	}
 	
 	private static String sendUDPMessage(String message) throws IOException{
-		InetAddress address = InetAddress.getByName(TCSName);
+		InetAddress address = InetAddress.getByName(TCSname);
 		
 		DatagramSocket clientSocket = new DatagramSocket();
 		byte[] sendData = new byte[message.length()];
@@ -70,8 +73,11 @@ public class User {
 	    return response;
 	}
 	
-	public static void main(String args[]) throws IOException{		
+	public static void main(String args[]) throws InterruptedException, IOException {		
         for(int i = 0; i < args.length-1; i++){
+            if(args[i].equals("-n")){
+                TCSname = args[i+1];
+            }
             if(args[i].equals("-p")){
                 TCSport = Integer.parseInt(args[i+1]);
             }
@@ -83,11 +89,29 @@ public class User {
         	String input = stdin.readLine();
         	String[] split = input.split(" ");
         	
-        	if(split[0].equals("list")){
-        		ArrayList<String> languages = getLanguages();
-        		for(int i = 0; i < languages.size(); i++){
-        			System.out.println(i+1 + "- " + languages.get(i));
+        	if(split[0].equals("list")){        		
+        		Thread thread = new Thread(new Runnable() {
+        		    public void run() {
+						try {
+	                		ArrayList<String> languages = getLanguages();
+	                		for(int i = 0; i < languages.size(); i++){
+	                			System.out.println(i+1 + "- " + languages.get(i));
+	                		}
+						} catch (IOException e) {
+							System.out.println("LIST: Error fetching languages");
+							e.printStackTrace();
+						}
+        		    }
+        		});
+        		
+        		thread.start();
+        		thread.join(3000);
+        		
+        		if(!thread.getState().equals(Thread.State.TERMINATED)){
+        			thread.interrupt();
+            		System.out.println("LIST: timeout");
         		}
+        		
         	}
         	else if(split[0].equals("request")){
         		if(split.length < 4){
@@ -97,16 +121,48 @@ public class User {
         			System.out.println("REQUEST: Languages have not been fetched yet, type 'list' to fetch them");
         		}
         		else{
-        			String language = languagesCache.get(Integer.parseInt(split[1])-1);
-        			System.out.println(language);
-        			TRSNode node = getTRSNode(language);
-        			
-        			System.out.println(node.getAddress().getHostAddress() + " " + node.getPort());
+            		Thread thread = new Thread(new Runnable() {
+            			
+            		    public void run() {
+            		    	try {
+            		    		String language = languagesCache.get(Integer.parseInt(split[1])-1);
+            		    		if(!split[2].equals("t") && !split[2].equals("f")){
+            		    			System.out.println("REQUEST: Second argument is expected to be 't' or 'f'");
+	            		    		return;
+            		    		}
+								TRSNode node = User.getTRSNode(language);
+			        			System.out.println(node.getAddress().getHostAddress() + " " + node.getPort());
+            		    	} catch (NumberFormatException|IndexOutOfBoundsException e){
+								System.out.println("REQUEST: First argument is expected to be a valid number");
+							} catch (IOException e) {
+								System.out.println("REQUEST: Error fetching languages");
+								e.printStackTrace();
+							} catch (UNREOFException e) {
+								System.out.println("REQUEST: Invalid language");
+								e.printStackTrace();
+							} catch (UNRERRException e) {
+								System.out.println("REQUEST: Invalid request");
+							}
+            		    }
+            		});
+            		
+            		thread.start();
+            		thread.join(3000);
+            		
+            		if(!thread.getState().equals(Thread.State.TERMINATED)){
+            			thread.interrupt();
+                		System.out.println("REQUEST: timeout");
+            		}
         		}
+        	}
+        	else if(split[0].equals("exit")){
+        		break;
         	}
         	else{
         		System.out.println("Unknown command");
         	}
         }
+        
+        return;
 	}
 }

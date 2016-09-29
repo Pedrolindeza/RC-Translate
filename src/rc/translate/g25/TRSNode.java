@@ -3,7 +3,6 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 
@@ -11,7 +10,6 @@ public class TRSNode {
 	private String language;
 	private InetAddress address;
 	private int port;
-	private int TCSport;
 	
 	public TRSNode(String language, InetAddress address,int port){
 		this.language = language;
