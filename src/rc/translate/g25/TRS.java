@@ -2,6 +2,9 @@ package rc.translate.g25;
 
 import java.io.*;
 import java.net.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
 
 
 public class TRS {
@@ -14,6 +17,18 @@ public class TRS {
 	      
 	      byte[] sendData = new byte[1024];
 	      byte[] receiveData = new byte[1024];
+	      
+	      Scanner scanner = null;
+	      Map<String,String> translations = new HashMap<>();
+	      try{
+		  scanner = new Scanner(new File("translations.txt"));
+	      }
+	      catch(Exception e){ System.out.println("ERROR: File not found");}
+		  while(scanner.hasNext()){
+			  String foreignlanguage = scanner.next();
+			  String portuguese = scanner.next();
+			  translations.put(foreignlanguage, portuguese);
+		  }
 	      
 	      String sentence = inFromUser.readLine();
 	      String[]splited= sentence.split(" ");
@@ -52,13 +67,26 @@ public class TRS {
 	    	  while(true){
 	    		  Socket connectTCP = TCPsocket.accept();
 	    		  BufferedReader message = new BufferedReader(new InputStreamReader(connectTCP.getInputStream()));
+	    		  DataOutputStream toclient = new DataOutputStream(connectTCP.getOutputStream());
 	    		  String tobesplit = message.readLine();
 	    		  String[] splitted= tobesplit.split(" ");
 	    		  
 	    		  if (splitted[0].equals("exit")){ TCPsocket.close(); break; }
 	    		  if(splitted[0].equals("TRQ")){
-	    			  if (splitted[1].equals("t")){/*TODO translation */ }
-	    			  else if (splitted[1].equals("t")){/*TODO translation */ }
+	    			  if (splitted[1].equals("t")){
+	    				  
+	    				  int numwords = Integer.parseInt(splitted[2]);
+	    				  String toreturn = "TRR t "+ numwords + " ";
+	    				  int count=3;
+	    				  while(count<numwords+3){
+	    					  String word= splitted[count++];
+	    					  toreturn+=translations.get(word) + " ";
+	    				  }
+	    				  toreturn+="\n";
+	    				  toclient.writeBytes(toreturn);
+	    				  
+	    				  }
+	    			  else if (splitted[1].equals("t")){/*TODO image translation */ }
 	    			  else{ System.out.println("ERROR Invalid Command after TRQ");}
 	    			  
 	    		  }
