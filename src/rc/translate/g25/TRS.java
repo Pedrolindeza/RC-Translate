@@ -3,6 +3,7 @@ package rc.translate.g25;
 import java.io.*;
 import java.net.*;
 
+
 public class TRS {
 	public static void main(String args[]) throws Exception
 	   {
@@ -35,7 +36,7 @@ public class TRS {
 	      	}
 	      	
 	      String tosend= new String();
-	      tosend="SRG "+ language +" "+IPAddress+" "+TCSport;
+	      tosend="SRG "+ language +" "+IPAddress+" "+TRSport+"\n";
 	      System.out.println(tosend);
 	      sendData = tosend.getBytes();
 	      DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, TCSport);
@@ -47,10 +48,25 @@ public class TRS {
 	      String modifiedSentence = new String(receivePacket.getData());
 	      String[] msg = modifiedSentence.split(" ");
 	      if (msg[1]=="OK"){
-	    	  //fork e derivados
-	      }
-	      else{//vai tudo abaixo
-	    	  
+	    	  ServerSocket TCPsocket = new ServerSocket(TCSport);
+	    	  while(true){
+	    		  Socket connectTCP = TCPsocket.accept();
+	    		  BufferedReader message = new BufferedReader(new InputStreamReader(connectTCP.getInputStream()));
+	    		  String tobesplit = message.readLine();
+	    		  String[] splitted= tobesplit.split(" ");
+	    		  
+	    		  if (splitted[0].equals("exit")){ TCPsocket.close(); break; }
+	    		  if(splitted[0].equals("TRQ")){
+	    			  if (splitted[1].equals("t")){/*TODO translation */ }
+	    			  else if (splitted[1].equals("t")){/*TODO translation */ }
+	    			  else{ System.out.println("ERROR Invalid Command after TRQ");}
+	    			  
+	    		  }
+	    		  else{ System.out.println("ERROR: Invalid Command");}
+	    	  }
+      	  }
+	      else{	
+	    	  System.out.println("TCS não deu o OK");	  
 	      }
 	      System.out.println("FROM SERVER:" + modifiedSentence);
 	      clientSocket.close();
