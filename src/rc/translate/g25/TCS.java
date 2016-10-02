@@ -12,11 +12,10 @@ class TCS{
     
     private static ArrayList<TRSNode> nodes = new ArrayList<TRSNode>();
     
-    @SuppressWarnings("null")
 	public static void main(String args[]) throws Exception{
     	
-        String receivedmsg ;
-        String sendmsg= new String();
+        String receivedmsg = null ;
+        String sendmsg= null;
         String[] parts = new String[5];
         int port = 0;
         InetAddress IPAddress = null;
@@ -31,41 +30,116 @@ class TCS{
         else setTCSPort(58025);
         
         /* Socket initialization */
-        setSocket( getTCSPort());
+        setSocket( getTCSPort() );
 	    
         System.out.println("\n\t//------ porta ->  " + getTCSPort() + " -------- //\n");
         	    
         while(true){
         	
         	DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+        	
             receber(receiveData, receivePacket);
             IPAddress = receivePacket.getAddress();
         	port = receivePacket.getPort();
         	
-        	receivedmsg = new String(receivePacket.getData()); 										// cria string
-            receivedmsg = receivedmsg.substring(0,receivedmsg.indexOf(0)); 							// Limita string ate primeiro zero
+        	/*----- RECEIVED MESSAGE ----- */
+        	receivedmsg = new String(receivePacket.getData()); 							
+            receivedmsg = receivedmsg.substring(0,receivedmsg.indexOf(0));
             if (receivedmsg.contains(" ")){
-            	parts= receivedmsg.split(" ");
-            	System.out.println("\n" +"entrei");
+            	parts = receivedmsg.split(" ");
             }
+            else parts[0] = receivedmsg;
+            System.out.println("\n" +"RECEIVED: " + receivedmsg + " / COMMAND : " + parts[0] );
+        	
+        	/*------ COMMAND SELECTION ------*/
+            if(parts[0].equals("SRG"))
+            	sendmsg = SRG(parts);
+            else if (parts[0].equals("ULQ\n")) 
+            	sendmsg = ULQ();
+            else if (parts[0].equals("SUN"))
+            	sendmsg = SUN(parts);
+            else if (parts[0].equals("UNQ"))
+            	sendmsg = UNQ(parts);
+            else
+            	sendmsg= "UNKNOWN COMMAND";
             
-            System.out.println("\n" +"RECEIVED: " + parts[0]);
-            
-            /*if (parts[0].equals("ULQ")) sendmsg = new String("ULR" + Integer.toString(nodes.size())	);
-            else if (receivedmsg.equals("Sim e ctg?\n")) sendmsg = new String("\n-> tambem mpt\n");*/
-            
-            
+            System.out.println("SENDED : " + sendmsg);
             sendData = sendmsg.getBytes();
             		
-            DatagramPacket sendPacket = new DatagramPacket(sendData, sendmsg.length(), IPAddress, port);
+            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
             serverSocket.send(sendPacket);
-            
             
         }
     }
     
-    public static void setSocket(int porta) throws SocketException {
-		// TODO Auto-generated method stub
+
+	private static String UNQ(String[] parts) {
+		String aux = new String();
+		
+		if( parts.length == 2 ){
+			parts[1] = parts[1].replace("\n", "");
+			for (TRSNode a : nodes){
+				if (a.getLanguage().equals(parts[1]) ){
+					return aux = "UNR " + a.getAddress().getHostAddress() + " " + a.getPort() + "\n";
+				}
+			}
+			return aux = "UNR EOF\n";
+		}
+		return aux = "UNR ERR\n";
+	}
+
+
+	private static String SUN(String[] parts) {
+		
+		String aux = new String();
+		if( parts.length == 4 ){
+			parts[3] = parts[3].replace("\n", ""); 
+			for (TRSNode a : nodes){
+				if (a.getLanguage().equals(parts[1]) ){
+					nodes.remove(a);
+					return aux = "SUR OK\n";
+				}
+			}
+			return aux = "SUR NOK\n";
+		}
+		else 
+			return aux = "SUR ERR\n";
+	}
+
+
+	private static String SRG(String[] parts) throws NumberFormatException, UnknownHostException {
+    	
+		String aux = new String();
+		
+		if( parts.length == 4 ){
+			parts[3] = parts[3].replace("\n", ""); 
+			TRSNode nsv = new TRSNode(parts[1], InetAddress.getByName(parts[2]), Integer.parseInt(parts[3]));
+			aux = "SRR OK\n";
+			if( isinlist(parts[1]))
+				aux = "SRR NOK\n";
+			else nodes.add(nsv);
+		}
+		else 
+			aux = "SRR ERR\n";
+		
+		return aux;
+	}
+
+	private static String ULQ() {
+		
+		String aux = new String("ULR");
+	
+    	if( nodes.isEmpty()) aux += " 0\n";
+    	else {
+    		aux += " " + Integer.toString(nodes.size());
+    		for( TRSNode a : nodes)
+    			aux += " " +  a.getLanguage();
+    		aux += "\n";
+    	}
+		return aux;
+	}
+
+	public static void setSocket(int porta) throws SocketException {
     	serverSocket = new DatagramSocket ( porta );
     	return;
 	}
@@ -84,9 +158,14 @@ class TCS{
     }
     
     public static void receber(byte[] receiveData, DatagramPacket receivePacket) throws IOException{
-    	java.util.Arrays.fill(receiveData, (byte) 0); 											//Enche tudo com zeros 
-        serverSocket.receive(receivePacket); 													// Bloqueante ate receber
-        
+    	java.util.Arrays.fill(receiveData, (byte) 0); 								
+        serverSocket.receive(receivePacket); 
     }
     
+    public static boolean isinlist(String lang){
+    	for(TRSNode a : nodes){
+    		if (a.getLanguage().equals(lang)) { return true; }
+    	}
+    	return false;
+    }
 }
