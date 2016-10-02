@@ -19,7 +19,7 @@ $ java -cp build/ rc.translate.g25.TCS [-p TCSport]
 
 Executar o TRS:
 ```sh
-$ java -cp build/ rc.translate.g25.TRS [-p TRSport] [-n TCSname] [-e TCSport]
+$ java -cp build/ rc.translate.g25.TRS language [-p TRSport] [-n TCSname] [-e TCSport]
 ```
 
 Executar o User:
