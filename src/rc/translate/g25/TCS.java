@@ -60,6 +60,8 @@ class TCS{
             	sendmsg = SUN(parts);
             else if (parts[0].equals("UNQ"))
             	sendmsg = UNQ(parts);
+            else
+            	sendmsg= "UNKNOWN COMMAND";
             
             System.out.println("SENDED : " + sendmsg);
             sendData = sendmsg.getBytes();
