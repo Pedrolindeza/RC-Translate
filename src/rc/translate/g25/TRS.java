@@ -75,7 +75,7 @@ public class TRS {
 	    		  if(splitted[0].equals("TRQ")){
 	    			  if (splitted[1].equals("t")){
 	    				  
-	    				  int numwords = Integer.parseInt(splitted[2]);
+	    				  int numwords = Integer.parseInt(splitted[2]);//random comment
 	    				  String toreturn = "TRR t "+ numwords + " ";
 	    				  int count=3;
 	    				  while(count<numwords+3){
