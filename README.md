@@ -4,7 +4,7 @@ Projeto de Redes de Computadores 2016/2017 - "Tradução RC" - Técnico Lisboa
 
 ### Compilação do projeto
 
-O projeto requer uma versão do Java 1.8 (o grupo usou a 1.8.0_102)
+O projeto requer uma versão do Java 1.7+ (o grupo usou a 1.8.0_102)
 
 ```sh
 $ make
