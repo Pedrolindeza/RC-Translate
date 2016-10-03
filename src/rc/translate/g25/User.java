@@ -134,10 +134,13 @@ public class User {
 			        			System.out.println(node.getAddress().getHostAddress() + " " + node.getPort());
 			        			
 			        			String words = "";
-			        			for(int i = 4; i < split.length; i++)
+			        			int j = 0;
+			        			for(int i = 4; i < split.length; i++){
 			        				words += split[i];
+			        				j++;
+			        			}
 			        			
-			        			System.out.println("SENDED: TRQ " + split[2] + " " + split[3] + " " + words + "\n");
+			        			System.out.println("SENDED: TRQ " + split[2] + " " + j + words + "\n");
 			        			
 			        			String response = node.sendTCPMessage("TRQ " + split[2] + " " + split[3] + " " + words + "\n");
 			        			System.out.println(response);
