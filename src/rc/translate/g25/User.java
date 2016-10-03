@@ -134,20 +134,38 @@ public class User {
 			        			System.out.println(node.getAddress().getHostAddress() + " " + node.getPort());
 			        			
 			        			String words = "";
-			        			int j = 0;
+			        			int j=0;
 			        			for(int i = 3; i < split.length; i++){
-			        				words += split[i];
+			        				words += " " + split[i];
 			        				j++;
 			        			}
 			        						        			
-			        			String response = node.sendTCPMessage("TRQ " + split[2] + " " + j + " " + words + "\n");
-			        			System.out.println(response);
+			        			String response = node.sendTCPMessage("TRQ " + split[2] + " " + j + words + "\n");
+			        			String[] split = response.replaceAll("\n", "").split(" ");
+			        			if(!split[0].equals("TRR")){
+			        				System.out.println("REQUEST: Response header error, expected 'TRR', received '" + split[0] + "'");
+			        				return;
+			        			}
+			        			
+			        			words = "";
+			        			j = 0;
+			        			for(int i = 3; i < split.length; i++){
+			        				words += " " + split[i];
+			        				j++;
+			        			}
+			        			
+			        			System.out.println(node.getAddress().getHostAddress() + ":" + words);
+			        			
 			        			
             		    	} catch (NumberFormatException|IndexOutOfBoundsException e){
 								System.out.println("REQUEST: First argument is expected to be a valid number");
+							} catch (java.net.SocketException e) {
+								System.out.println("REQUEST: TCP Socket Error");
+								e.printStackTrace();
 							} catch (IOException e) {
 								System.out.println("REQUEST: Error fetching languages");
 								e.printStackTrace();
+								
 							} catch (UNREOFException e) {
 								System.out.println("REQUEST: Invalid language");
 								e.printStackTrace();

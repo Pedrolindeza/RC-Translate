@@ -52,7 +52,9 @@ public class TRSNode {
 		BufferedReader output = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		dos.writeBytes(message);
 		
+		String response = output.readLine();
+		
 		socket.close();
-		return output.readLine();
+		return response;
 	}
 }
