@@ -132,6 +132,14 @@ public class User {
             		    		}
 								TRSNode node = User.getTRSNode(language);
 			        			System.out.println(node.getAddress().getHostAddress() + " " + node.getPort());
+			        			
+			        			String words = "";
+			        			for(int i = 4; i < split.length; i++)
+			        				words += split[i];
+			        			
+			        			String response = node.sendTCPMessage("TRQ " + split[2] + " " + split[3] + " " + word + "\n");
+			        			System.out.println(response);
+			        			
             		    	} catch (NumberFormatException|IndexOutOfBoundsException e){
 								System.out.println("REQUEST: First argument is expected to be a valid number");
 							} catch (IOException e) {
