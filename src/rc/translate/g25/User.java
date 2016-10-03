@@ -135,14 +135,12 @@ public class User {
 			        			
 			        			String words = "";
 			        			int j = 0;
-			        			for(int i = 4; i < split.length; i++){
+			        			for(int i = 3; i < split.length; i++){
 			        				words += split[i];
 			        				j++;
 			        			}
-			        			
-			        			System.out.println("SENDED: TRQ " + split[2] + " " + j + words + "\n");
-			        			
-			        			String response = node.sendTCPMessage("TRQ " + split[2] + " " + split[3] + " " + words + "\n");
+			        						        			
+			        			String response = node.sendTCPMessage("TRQ " + split[2] + " " + j + " " + words + "\n");
 			        			System.out.println(response);
 			        			
             		    	} catch (NumberFormatException|IndexOutOfBoundsException e){
