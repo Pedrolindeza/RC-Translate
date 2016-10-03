@@ -1,7 +1,6 @@
 all:
 	mkdir -p build/
-	javac -d build/ -implicit:class src/rc/translate/g25/*.java
+	javac -cp $CLASSPATH:src/ -d build/ src/rc/*/*/*.java
 
 clean:
 	rm -rf build/
-

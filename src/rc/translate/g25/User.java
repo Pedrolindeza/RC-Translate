@@ -7,6 +7,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import rc.translate.g25.exception.*;
 
 public class User {
 	private static String TCSname = "127.0.0.1";
@@ -72,6 +73,36 @@ public class User {
 
 	    return response;
 	}
+	
+	private static String[] translateWords(String[] words, TRSNode node) throws TRRException, IOException{
+		
+		String response = node.sendTCPMessage("TRQ t " + words.length + " " + implode(" ", words) + "\n");
+		String[] split = response.replaceAll("\n", "").split(" ");
+		
+		if(!split[0].equals("TRR")){
+			System.out.println("REQUEST: Response header error, expected 'TRR', received '" + split[0] + "'");
+			throw new TRRException(split[0]);
+		}
+		
+		String[] result = new String[split.length-3];
+		
+		for(int j = 0; j < split.length-3; j++){
+			result[j] = split[j+3];
+		}
+		
+		return result;
+	}
+	
+	private static String implode(String delimeter, String[] array){
+		String result = "";
+		for(int i = 0; i < array.length; i++){
+			result += array[i];
+			if(i < array.length - 1){
+				result += delimeter;
+			}
+		}
+		return result;
+	}
 
 	public static void main(String args[]) throws InterruptedException, IOException {
         for(int i = 0; i < args.length-1; i++){
@@ -126,35 +157,30 @@ public class User {
             		    public void run() {
             		    	try {
             		    		String language = languagesCache.get(Integer.parseInt(split[1])-1);
+            		    		
             		    		if(!split[2].equals("t") && !split[2].equals("f")){
             		    			System.out.println("REQUEST: Second argument is expected to be 't' or 'f'");
 	            		    		return;
             		    		}
+            		    		
 								TRSNode node = User.getTRSNode(language);
 			        			System.out.println(node.getAddress().getHostAddress() + " " + node.getPort());
 			        			
-			        			String words = "";
-			        			int j=0;
-			        			for(int i = 3; i < split.length; i++){
-			        				words += " " + split[i];
-			        				j++;
+			        			//Text
+			        			if(split[2].equals("t")){
+				        			String[] words = new String[split.length-3];
+				        			for(int j = 0; j < split.length - 3; j++){
+				        				words[j] = split[j+3];
+				        			}
+				        			
+				        			String[] translatedWords = translateWords(words, node);
+				        			System.out.println(node.getAddress().getHostAddress() + ":" + implode(" ", translatedWords));
 			        			}
-			        						        			
-			        			String response = node.sendTCPMessage("TRQ " + split[2] + " " + j + words + "\n");
-			        			String[] split = response.replaceAll("\n", "").split(" ");
-			        			if(!split[0].equals("TRR")){
-			        				System.out.println("REQUEST: Response header error, expected 'TRR', received '" + split[0] + "'");
-			        				return;
-			        			}
-			        			
-			        			words = "";
-			        			j = 0;
-			        			for(int i = 3; i < split.length; i++){
-			        				words += " " + split[i];
-			        				j++;
+			        			//Image
+			        			else{
+			        				String filePath = split[3];
 			        			}
 			        			
-			        			System.out.println(node.getAddress().getHostAddress() + ":" + words);
 			        			
 			        			
             		    	} catch (NumberFormatException|IndexOutOfBoundsException e){
@@ -165,6 +191,8 @@ public class User {
 							} catch (IOException e) {
 								System.out.println("REQUEST: Error fetching languages");
 								e.printStackTrace();
+							} catch (TRRException e) {
+								System.out.println("REQUEST: Response header error, expected 'TRR', received '" + e.getInput() + "'");
 								
 							} catch (UNREOFException e) {
 								System.out.println("REQUEST: Invalid language");
