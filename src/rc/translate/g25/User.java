@@ -137,6 +137,8 @@ public class User {
 			        			for(int i = 4; i < split.length; i++)
 			        				words += split[i];
 			        			
+			        			System.out.println("SENDED: TRQ " + split[2] + " " + split[3] + " " + words + "\n");
+			        			
 			        			String response = node.sendTCPMessage("TRQ " + split[2] + " " + split[3] + " " + words + "\n");
 			        			System.out.println(response);
 			        			
