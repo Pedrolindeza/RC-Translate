@@ -8,51 +8,14 @@ import java.util.Scanner;
 
 
 public class TRS {
-	
-	public static void fillMap (translations){
-		try{
-			  scanner = new Scanner(new File("translations.txt"));
-		      }
-		      catch(Exception e){ System.out.println("ERROR: File not found");}
-			  while(scanner.hasNext()){
-				  String foreignlanguage = scanner.next();
-				  String portuguese = scanner.next();
-				  translations.put(foreignlanguage, portuguese);
-			  }
-	}
-	
-	public static void register(String language,InetAddress IPAddress, int TRSport){
-		
-	      String tosend= new String();
-	      tosend="SRG "+ language +" "+IPAddress.getHostAddress()+" "+TRSport+"\n";
-	      System.out.println(tosend);
-	      sendData = tosend.getBytes();
-	      DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, TCSport);
-	      clientSocket.send(sendPacket);
-	      
-	}
-	
-	public static String receiveConfirmation (byte[] receiveData,){
-	DatagramSocket clientSocket = new DatagramSocket();
-	java.util.Arrays.fill(receiveData, (byte) 0);
-    DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-    clientSocket.receive(receivePacket);
-    String modifiedSentence = new String(receivePacket.getData());
-    modifiedSentence = modifiedSentence.substring(0, modifiedSentence.indexOf(0));
-
-    return modifiedSentence;
-    }
-	
+	private static DatagramSocket clientSocket;
+    private static byte[] sendData = new byte[1024];
+    private static byte[] receiveData = new byte[1024];
+    private static Map<String,String> translations;
+    
 	public static void main(String args[]) throws Exception
 	   {
 
-	      
-	      
-	      
-	      byte[] sendData = new byte[1024];
-	      byte[] receiveData = new byte[1024];
-	      
-	      Scanner scanner = null;
 	      Map<String,String> translations = new HashMap<>();
 	      fillMap(translations);
 		  System.out.println(translations);
@@ -61,6 +24,7 @@ public class TRS {
 	      InetAddress IPAddress = InetAddress.getByName("localhost");
 	      int TCSport = 58025;
 	      String language=args[0];
+	      
 	      	for(int i=1; i<args.length -1;i++){
 	      		System.out.println(args[i]);
 	      		if(args[i].equals("-p")){
@@ -75,9 +39,9 @@ public class TRS {
 	      		
 	      	}
 	      	
-	      register(language, IPAddress, TRSport);
+	      register(language, IPAddress, TRSport,TCSport);
 	      String confirmation=receiveConfirmation();
-	      String[] msg = modifiedSentence.split(" ");
+	      String[] msg = confirmation.split(" ");
 	      
 	      
 	      if (msg[1].equals("OK\n")){
@@ -98,17 +62,10 @@ public class TRS {
 	    		  if(splitted[0].equals("TRQ")){
 	    			  if (splitted[1].equals("t")){
 	    				  
-	    				  int numwords = Integer.parseInt(splitted[2]);
-	    				  String toreturn = "TRR t "+ numwords + " ";
-	    				  int count=3;
-	    				  while(count<numwords+3){
-	    					  String word= splitted[count++];
-	    					  toreturn+=translations.get(word) + " ";
-	    				  }
-	    				  toreturn+="\n";
-	    				  toclient.writeBytes(toreturn);
+	    				  toclient.writeBytes(translate(splitted));
 	    				  
 	    			  }
+	    			  
 	    			  else if (splitted[1].equals("f")){/*TODO image translation */ }
 
 	    			  else{ System.out.println("ERROR Invalid Command after TRQ");}
@@ -116,11 +73,73 @@ public class TRS {
 	    		  }
 	    		  else{ System.out.println("ERROR: Invalid Command");}
 	    	  }
-	    }
+	    	  
+	      }
 	      else{	
 	    	  System.out.println("TCS nao deu o OK");	  
 	      }
-	      System.out.println("FROM SERVER:" + modifiedSentence);
+	      System.out.println("FROM SERVER:" + confirmation);
 	      clientSocket.close();
 	   }
+
+
+public static void register(String language,InetAddress IPAddress, int TRSport,int TCSport){
+	
+    String tosend= new String();
+    tosend="SRG "+ language +" "+IPAddress.getHostAddress()+" "+TRSport+"\n";
+    System.out.println(tosend);
+    sendData = tosend.getBytes();
+    DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, TCSport);
+    try {
+		clientSocket.send(sendPacket);
+	} catch (IOException e) {
+		System.out.println("Error sending message to TCS");
+	}
+    
+}
+
+
+public static void fillMap (Map<String,String>translations){
+	Scanner scanner=null;
+	try{
+		  scanner = new Scanner(new File("translations.txt"));
+	      }
+	      catch(Exception e){ System.out.println("ERROR: File not found");}
+	while(scanner.hasNext()){
+	  String foreignlanguage = scanner.next();
+	  String portuguese = scanner.next();
+	  translations.put(foreignlanguage, portuguese);
+	}
+}
+
+
+public static String receiveConfirmation (){
+
+	java.util.Arrays.fill(receiveData, (byte) 0);
+	DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+	
+	try {
+		clientSocket.receive(receivePacket);
+	} catch (IOException e) {
+		System.out.println("Error receiving confirmation from TCS");
+		e.printStackTrace();
+	}
+	String modifiedSentence = new String(receivePacket.getData());
+	modifiedSentence = modifiedSentence.substring(0, modifiedSentence.indexOf(0));
+	
+	return modifiedSentence;
+}
+public static String translate(String[] splitted){
+	
+	int numwords = Integer.parseInt(splitted[2]);
+	String toreturn = "TRR t "+ numwords + " ";
+	int count=3;
+	
+	  while(count<numwords+3){
+		  String word= splitted[count++];
+		  toreturn+=translations.get(word) + " ";
+	  }
+	  
+	  toreturn+="\n";
+	  return toreturn;
 }
