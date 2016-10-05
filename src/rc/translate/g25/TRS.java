@@ -5,6 +5,7 @@ import java.net.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+import java.io.DataOutputStream;
 
 
 public class TRS {
@@ -15,7 +16,7 @@ public class TRS {
     
 	public static void main(String args[]) throws Exception
 	   {
-
+	   	  clientSocket= new DatagramSocket();
 	      Map<String,String> translations = new HashMap<>();
 	      fillMap(translations);
 		  System.out.println(translations);
@@ -45,16 +46,16 @@ public class TRS {
 	      
 	      
 	      if (msg[1].equals("OK\n")){
-	      System.out.println("entrou");
 	    	  ServerSocket TCPsocket = new ServerSocket(TRSport);
 	    	  while(true){
-	    		  
 	    		  
 	    		  Socket connectTCP = TCPsocket.accept();
 	    		  BufferedReader message = new BufferedReader(new InputStreamReader(connectTCP.getInputStream()));
 	    		  DataOutputStream toclient = new DataOutputStream(connectTCP.getOutputStream());
 	    		  String tobesplit = message.readLine();
 	    		  String[] splitted= tobesplit.split(" ");
+
+
 	    		  
 	    		  
 	    		  if (splitted[0].equals("exit")){ TCPsocket.close(); break; }
@@ -134,12 +135,15 @@ public static String translate(String[] splitted){
 	int numwords = Integer.parseInt(splitted[2]);
 	String toreturn = "TRR t "+ numwords + " ";
 	int count=3;
-	
 	  while(count<numwords+3){
-		  String word= splitted[count++];
-		  toreturn+=translations.get(word) + " ";
+		  String word= splitted[count];
+		  if(translations.containsKey(word))
+		  	toreturn+=translations.get(word) + " ";
+		  count++;
+	
 	  }
 	  
 	  toreturn+="\n";
 	  return toreturn;
+}
 }
