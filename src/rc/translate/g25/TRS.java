@@ -12,15 +12,13 @@ public class TRS {
 	private static DatagramSocket clientSocket;
     private static byte[] sendData = new byte[1024];
     private static byte[] receiveData = new byte[1024];
-    private static Map<String,String> translations;
+
     
 	public static void main(String args[]) throws Exception
 	   {
 	   	  clientSocket= new DatagramSocket();
-	      Map<String,String> translations = new HashMap<>();
-	      fillMap(translations);
-		  System.out.println(translations);
-		  
+	      HashMap<String,String> translations = new HashMap<>();
+	      fillMap(translations);		  
 	      int TRSport = 59000;
 	      InetAddress IPAddress = InetAddress.getByName("localhost");
 	      int TCSport = 58025;
@@ -55,19 +53,43 @@ public class TRS {
 	    		  String tobesplit = message.readLine();
 	    		  String[] splitted= tobesplit.split(" ");
 
-
-	    		  
-	    		  
 	    		  if (splitted[0].equals("exit")){ TCPsocket.close(); break; }
 
 	    		  if(splitted[0].equals("TRQ")){
 	    			  if (splitted[1].equals("t")){
-	    				  
-	    				  toclient.writeBytes(translate(splitted));
+	    				  System.out.println(translations);
+	    				  toclient.writeBytes(translate(splitted,translations));
 	    				  
 	    			  }
 	    			  
-	    			  else if (splitted[1].equals("f")){/*TODO image translation */ }
+	    			  else if (splitted[1].equals("f")){
+	    			  		/*String fileName = splitted[2];
+	    			  		File file = new File(fileName);
+	    			  		FileInputStream fis = new FileInputStream(file);
+	    			  		BufferedInputStream bis = new BufferedInputStream(fis);
+
+	    			  		byte[] contents;
+	    			  		long fileLength = file.length();
+	    			  		long current = 0 ;
+
+	    			  		long start = System.nanoTime();
+	    			  		while(current!=fileLength){
+	    			  			int size = 10000;
+	    			  			if(fileLength - current>=size )
+	    			  				current+=size;
+	    			  			else{
+	    			  				size=(int)(fileLength - current);
+	    			  				current=fileLength;
+	    			  			}
+	    			  			contents = new byte[size];
+	    			  			bis.read(contents,0,size);
+	    			  			os.write(contents);
+
+	    			  		}
+	    			  		os.flush();
+							System.out.println("File sent");*/
+
+	    			  }
 
 	    			  else{ System.out.println("ERROR Invalid Command after TRQ");}
 	    			  
@@ -130,15 +152,17 @@ public static String receiveConfirmation (){
 	
 	return modifiedSentence;
 }
-public static String translate(String[] splitted){
+public static String translate(String[] splitted, HashMap<String,String> translations){
 	
 	int numwords = Integer.parseInt(splitted[2]);
 	String toreturn = "TRR t "+ numwords + " ";
 	int count=3;
 	  while(count<numwords+3){
 		  String word= splitted[count];
-		  if(translations.containsKey(word))
+		  
+		  if(translations.containsKey(word)){
 		  	toreturn+=translations.get(word) + " ";
+		  }
 		  count++;
 	
 	  }
