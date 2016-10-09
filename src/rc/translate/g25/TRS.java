@@ -59,36 +59,19 @@ public class TRS {
 	    			  if (splitted[1].equals("t")){
 	    				  System.out.println(translations);
 	    				  toclient.writeBytes(translate(splitted,translations));
-	    				  
+
 	    			  }
 	    			  
 	    			  else if (splitted[1].equals("f")){
-	    			  		/*String fileName = splitted[2];
-	    			  		File file = new File(fileName);
-	    			  		FileInputStream fis = new FileInputStream(file);
-	    			  		BufferedInputStream bis = new BufferedInputStream(fis);
-
-	    			  		byte[] contents;
-	    			  		long fileLength = file.length();
-	    			  		long current = 0 ;
-
-	    			  		long start = System.nanoTime();
-	    			  		while(current!=fileLength){
-	    			  			int size = 10000;
-	    			  			if(fileLength - current>=size )
-	    			  				current+=size;
-	    			  			else{
-	    			  				size=(int)(fileLength - current);
-	    			  				current=fileLength;
-	    			  			}
-	    			  			contents = new byte[size];
-	    			  			bis.read(contents,0,size);
-	    			  			os.write(contents);
-
-	    			  		}
-	    			  		os.flush();
-							System.out.println("File sent");*/
-
+	    			  		int size = Integer.parseInt(splitted[3]);
+	    			  		receiveFile(connectTCP,splitted[2],size);
+	    			  		 if(translations.containsKey(splitted[2])){
+		  						String fileToSend = translations.get(splitted[2]);
+		  						 sendFile(connectTCP,fileToSend);
+	    				  
+		  					}
+		  					else{ System.out.println("ERROR: No such file");}
+	    			  		
 	    			  }
 
 	    			  else{ System.out.println("ERROR Invalid Command after TRQ");}
@@ -169,5 +152,34 @@ public static String translate(String[] splitted, HashMap<String,String> transla
 	  
 	  toreturn+="\n";
 	  return toreturn;
+}
+
+public static void sendFile(Socket connectTCP, String filename) throws IOException{
+	DataOutputStream dos = new DataOutputStream(connectTCP.getOutputStream());
+	FileInputStream fis = new FileInputStream(filename);
+	byte[] buffer = new byte[4096];
+	while(fis.read(buffer)>0){
+		dos.write(buffer);
+	}
+	fis.close();
+	dos.close();
+}
+public static void receiveFile(Socket connectTCP, String filename,int filesize) throws IOException{
+	DataInputStream dis = new DataInputStream(connectTCP.getInputStream());
+	FileOutputStream fos = new FileOutputStream(filename);
+	byte[] buffer = new byte[4096];
+
+	int read=0;
+	int totalRead = 0;
+	int remaining = filesize;
+	while((read = dis.read(buffer,0,Math.min(buffer.length,remaining)))>0){
+		totalRead+=read;
+		remaining-=read;
+		System.out.println("read "+totalRead+" bytes");
+		fos.write(buffer,0,read);
+	}
+	fos.close();
+	dis.close();
+
 }
 }
