@@ -191,7 +191,15 @@ public class User {
 			        			//Image
 			        			else{
 			        				String filePath = split[3];
-			        				String newFilePath = translateFile(filePath, node);
+			        				
+			        				File file = new File(filePath);
+			        				System.out.println(file.length() + " Bytes to transmit");
+			        				
+			        				String[] response = translateFile(filePath, node).split(" ");
+			        				String newFilePath = response[0];
+			        				int size = Integer.parseInt(response[1]);
+			        				
+			        				System.out.println("reveiced file " + newFilePath + " - " + size + " Bytes");
 			        			}
 			        			
 			        			

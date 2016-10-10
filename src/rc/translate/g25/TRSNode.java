@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -66,6 +67,7 @@ public class TRSNode {
 	public String sendFile(String path) throws IOException{    
 		Socket socket = new Socket(this.address, this.port);
 		
+		//Upload File		
 		File file = new File(path);
         BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
         OutputStream os = socket.getOutputStream();
@@ -94,9 +96,42 @@ public class TRSNode {
         bis.close();
         
         os.write("\n".getBytes());
-        os.flush();
+        os.flush();       
+        
+        
+        
+        //Download File
+        InputStream is = socket.getInputStream();
+        
+        byte[] chunk = new byte[1000];        
+        int chunkLen = is.read(chunk);
 
+        String chunkString = chunk.toString();
+        String[] split = chunkString.split(" ");
+        if(!split[0].equals("TRR") || !split[1].equals("f")){
+        	socket.close();
+        	return null;
+        }
         
+    	String filename = split[2];
+    	int size = Integer.parseInt(split[3]);
         
+    	File newFile = new File(filename);
+    	FileOutputStream fos = new FileOutputStream(newFile);
+
+    	fos.write(split[4].getBytes());
+    	
+        while((chunkLen = is.read(chunk)) != -1) {
+        	for(byte b : chunk){
+        		if(b != (byte) '\n'){
+        			fos.write(b);
+        		}
+        	}
+        }
+        
+        fos.close();
+        
+        socket.close();
+        return filename + " " + size;
 	}
 }
