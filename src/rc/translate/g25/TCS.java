@@ -31,24 +31,24 @@ class TCS{
         
         /* Socket initialization */
         setSocket( getTCSPort() );
-	    
         System.out.println("\n\t//------ porta ->  " + getTCSPort() + " -------- //\n");
         	    
         while(true){
         	
-        	DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
         	
+        	DatagramPacket receivePacket = packetCreator(receiveData);
             receber(receiveData, receivePacket);
-            IPAddress = receivePacket.getAddress();
-        	port = receivePacket.getPort();
+            IPAddress = getIP(receivePacket);
+        	port = getPort(receivePacket);
         	
         	/*----- RECEIVED MESSAGE ----- */
-        	receivedmsg = new String(receivePacket.getData()); 							
-            receivedmsg = receivedmsg.substring(0,receivedmsg.indexOf(0));
+        	receivedmsg = getMessage(receivePacket);
+        	
             if (receivedmsg.contains(" ")){
             	parts = receivedmsg.split(" ");
             }
             else parts[0] = receivedmsg;
+            
             System.out.println("\n" +"RECEIVED: " + receivedmsg + " / COMMAND : " + parts[0] );
         	
         	/*------ COMMAND SELECTION ------*/
@@ -72,7 +72,24 @@ class TCS{
         }
     }
     
+	private static DatagramPacket packetCreator(byte[] receiveData) {
+		return new DatagramPacket(receiveData, receiveData.length);
+	}
 
+	private static String getMessage(DatagramPacket receivePacket) throws IOException {
+		String receivedmsg = new String(receivePacket.getData()); 							
+        receivedmsg = receivedmsg.substring(0,receivedmsg.indexOf(0));
+		return receivedmsg;
+	}
+
+	private static int getPort(DatagramPacket receivePacket)  {
+		return receivePacket.getPort();
+	}
+
+	private static InetAddress getIP(DatagramPacket receivePacket){	
+	 	return receivePacket.getAddress();
+	}
+	
 	private static String UNQ(String[] parts) {
 		String aux = new String();
 		
@@ -157,7 +174,7 @@ class TCS{
     	return TCSPort;
     }
     
-    public static void receber(byte[] receiveData, DatagramPacket receivePacket) throws IOException{
+    public static void receber(byte[] receiveData, DatagramPacket receivePacket) throws IOException, SocketException{
     	java.util.Arrays.fill(receiveData, (byte) 0); 								
         serverSocket.receive(receivePacket); 
     }
