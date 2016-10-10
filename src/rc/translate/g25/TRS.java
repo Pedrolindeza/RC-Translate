@@ -1,3 +1,4 @@
+
 package rc.translate.g25;
 
 import java.io.*;
@@ -41,16 +42,6 @@ public class TRS {
 	      register(language, IPAddress, TRSport,TCSport);
 	      String confirmation=receiveConfirmation();
 	      String[] msg = confirmation.split(" ");
-
-	      Runtime.getRuntime().addShutdownHook(new Thread() {
-		public void run() { 
-		 String tosend= new String();
-		 tosend="SUN "+language+" "+IPAddress.getHostAddress+" "+TCSport;
-		 sendData=tosend.getBytes();
-		DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, TCSport);
-		}
-	      });
-	      
 	      
 	      if (msg[1].equals("OK\n")){
 	    	  ServerSocket TCPsocket = new ServerSocket(TRSport);
@@ -73,7 +64,11 @@ public class TRS {
 	    			  
 	    			  else if (splitted[1].equals("f")){
 	    			  		int size = Integer.parseInt(splitted[3]);
-	    			  		receiveFile(connectTCP,splitted[2],size);
+	    			  		File file = new File(splitted[2]);
+	    			  		FileOutputStream fos = new FileOutputStream(file);
+	    			  		fos.write(splitted[4].getBytes());
+	    			  		
+
 	    			  		 if(translations.containsKey(splitted[2])){
 		  						String fileToSend = translations.get(splitted[2]);
 		  						 sendFile(connectTCP,fileToSend);
@@ -171,9 +166,9 @@ public static void sendFile(Socket connectTCP, String filename) throws IOExcepti
         
         byte[] contents;
         long fileLength = file.length(); 
-        long current = 0;
-         
-        long start = System.nanoTime();
+       	long current = 0;
+        String toWrite = "TRR d "+filename+" "+Long.toString(fileLength)+" ";
+        os.write(toWrite.getBytes()); 
         while(current!=fileLength){ 
             int size = 10000;
             if(fileLength - current >= size)
@@ -191,18 +186,5 @@ public static void sendFile(Socket connectTCP, String filename) throws IOExcepti
         connectTCP.close();
 	
 }
-public static void receiveFile(Socket connectTCP, String filename,int filesize) throws IOException{
-	FileOutputStream fos = new FileOutputStream(filename);
-	byte[] contents = new byte[4096];
-	BufferedOutputStream bos = new BufferedOutputStream(fos);
-	int bytesRead = 0; 
-	InputStream is = connectTCP.getInputStream();
-        
-        while((bytesRead=is.read(contents))!=-1)
-            bos.write(contents, 0, bytesRead); 
-        
-        bos.flush(); 
-        connectTCP.close(); 
 
-}
 }
