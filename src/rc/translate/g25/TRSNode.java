@@ -106,6 +106,7 @@ public class TRSNode {
         byte[] chunk = new byte[1000];        
         int chunkLen = is.read(chunk);
 
+<<<<<<< HEAD
         String chunkString = chunk.toString();
         String[] split = chunkString.split(" ");
         if(!split[0].equals("TRR") || !split[1].equals("f")){
@@ -130,6 +131,9 @@ public class TRSNode {
         }
         
         fos.close();
+=======
+        return null;
+>>>>>>> adee0d15cd758d069dec7bd4b105b8e8bd87222f
         
         socket.close();
         return filename + " " + size;
