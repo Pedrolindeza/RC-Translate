@@ -63,7 +63,7 @@ class TCS{
             else
             	sendmsg= "UNKNOWN COMMAND";
             
-            System.out.println("SENDED : " + sendmsg);
+            System.out.println("SENT : " + sendmsg);
             sendData = sendmsg.getBytes();
             		
             DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);

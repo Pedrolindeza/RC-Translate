@@ -96,7 +96,7 @@ public class TRSNode {
         os.write("\n".getBytes());
         os.flush();
 
-        
+        return null;
         
 	}
 }
