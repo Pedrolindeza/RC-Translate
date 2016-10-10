@@ -1,8 +1,13 @@
 package rc.translate.g25;
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 
@@ -56,5 +61,42 @@ public class TRSNode {
 		
 		socket.close();
 		return response;
+	}
+	
+	public String sendFile(String path) throws IOException{    
+		Socket socket = new Socket(this.address, this.port);
+		
+		File file = new File(path);
+        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
+        OutputStream os = socket.getOutputStream();
+
+        long fileLength = file.length(); 
+        long current = 0;
+        
+        os.write(("TRQ f " + file.getName() + fileLength + " ").getBytes());
+        
+        byte[] contents;
+        while(current != fileLength){ 
+            int size = 10000;
+            
+            if(fileLength - current >= size)
+                current += size;
+            else{ 
+                size = (int)(fileLength - current); 
+                current = fileLength;
+            } 
+            
+            contents = new byte[size]; 
+            bis.read(contents, 0, size); 
+            os.write(contents);
+        }
+        
+        bis.close();
+        
+        os.write("\n".getBytes());
+        os.flush();
+
+        
+        
 	}
 }

@@ -1,6 +1,7 @@
 package rc.translate.g25;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.DatagramPacket;
@@ -93,6 +94,17 @@ public class User {
 		return result;
 	}
 	
+	private static String translateFile(String filepath, TRSNode node) throws IOException{
+		File f = new File(filepath);
+		
+		if(!f.exists() || f.isDirectory()){
+			throw new IOException("Invalid file name");
+		}
+		
+		String result = node.sendFile(filepath);
+		return result;
+	}
+	
 	private static String implode(String delimeter, String[] array){
 		String result = "";
 		for(int i = 0; i < array.length; i++){
@@ -179,6 +191,7 @@ public class User {
 			        			//Image
 			        			else{
 			        				String filePath = split[3];
+			        				String newFilePath = translateFile(filePath, node);
 			        			}
 			        			
 			        			
@@ -189,7 +202,7 @@ public class User {
 								System.out.println("REQUEST: TCP Socket Error");
 								e.printStackTrace();
 							} catch (IOException e) {
-								System.out.println("REQUEST: Error fetching languages");
+								System.out.println("REQUEST: " + e);
 								e.printStackTrace();
 							} catch (TRRException e) {
 								System.out.println("REQUEST: Response header error, expected 'TRR', received '" + e.getInput() + "'");
