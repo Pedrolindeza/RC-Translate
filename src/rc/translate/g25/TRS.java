@@ -65,7 +65,7 @@ public class TRS {
 	    			  
 	    			  else if (splitted[1].equals("f")){
                             
-	    			  		int size =Integer.parseInt("copy"+splitted[3]);
+	    			  		int size = Integer.parseInt(splitted[3]);
 	    			  		File file = new File(splitted[2]);
 	    			  		FileOutputStream fos = new FileOutputStream(file);
 	    			  		fos.write(splitted[4].getBytes());
@@ -73,6 +73,7 @@ public class TRS {
 
 	    			  		 if(translations.containsKey(splitted[2])){
 		  						String fileToSend = translations.get(splitted[2]);
+	    			  			 System.out.println("Translation for file "+fileToSend);
 		  						 sendFile(connectTCP,fileToSend);
 	    				  
 		  					}

@@ -164,6 +164,8 @@ public class User {
         			System.out.println("REQUEST: Languages have not been fetched yet, type 'list' to fetch them");
         		}
         		else{
+        			
+        			
             		Thread thread = new Thread(new Runnable() {
 
             		    public void run() {
@@ -194,12 +196,16 @@ public class User {
 			        				
 			        				File file = new File(filePath);
 			        				System.out.println(file.length() + " Bytes to transmit");
+			        					
+			        				String response = translateFile(filePath, node);
 			        				
-			        				String[] response = translateFile(filePath, node).split(" ");
-			        				String newFilePath = response[0];
-			        				int size = Integer.parseInt(response[1]);
+			        				System.out.println(response);
+			        				return;
 			        				
-			        				System.out.println("reveiced file " + newFilePath + " - " + size + " Bytes");
+			        				//String newFilePath = response[0];
+			        				//int size = Integer.parseInt(response[1]);
+			        				
+			        				//System.out.println("reveiced file " + newFilePath + " - " + size + " Bytes");
 			        			}
 			        			
 			        			

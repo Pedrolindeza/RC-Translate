@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.nio.file.Files;
 
 public class TRSNode {
 	private String language;
@@ -69,15 +70,18 @@ public class TRSNode {
 		
 		//Upload File		
 		File file = new File(path);
-        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
+        //BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
         OutputStream os = socket.getOutputStream();
 
         long fileLength = file.length(); 
-        long current = 0;
+        //long current = 0;
         
         os.write(("TRQ f " + file.getName() + " " + fileLength + " ").getBytes());
         
-        byte[] contents;
+        byte[] contents = Files.readAllBytes(file.toPath());
+        os.write(contents);
+
+        /*
         while(current != fileLength){ 
             int size = 10000;
             
@@ -91,13 +95,12 @@ public class TRSNode {
             contents = new byte[size]; 
             bis.read(contents, 0, size); 
             os.write(contents);
-        }
+        }*/
         
-        bis.close();
+        //bis.close();
         
         os.write("\n".getBytes());
-        os.flush();       
-        
+        os.flush();
         
         
         //Download File
@@ -110,7 +113,7 @@ public class TRSNode {
         String[] split = chunkString.split(" ");
         if(!split[0].equals("TRR") || !split[1].equals("f")){
         	socket.close();
-        	return null;
+        	return chunkString;
         }
         
     	String filename = split[2];
