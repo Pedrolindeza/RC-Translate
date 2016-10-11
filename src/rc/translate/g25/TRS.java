@@ -1,4 +1,3 @@
-
 package rc.translate.g25;
 
 import java.io.*;
@@ -22,6 +21,7 @@ public class TRS {
 	      fillMap(translations);		  
 	      int TRSport = 59000;
 	      InetAddress IPAddress = InetAddress.getLocalHost();
+	      InetAddress TCSIP = InetAddress.getLocalHost();
 	      int TCSport = 58025;
 	      String language=args[0];
 	      
@@ -31,7 +31,7 @@ public class TRS {
 	      			TRSport=Integer.parseInt(args[++i]);
 	      		}
 	      		if(args[i].equals("-n")){
-	      			IPAddress=InetAddress.getByName(args[++i]);
+	      			TCSIP=InetAddress.getByName(args[++i]);
 	      		}
 	      		if(args[i].equals("-e")){
 	      			TCSport=Integer.parseInt(args[++i]);
@@ -39,7 +39,7 @@ public class TRS {
 	      		
 	      	}
 	      	
-	      register(language, IPAddress, TRSport,TCSport);
+	      register(language, TCSIP,IPAddress, TRSport,TCSport);
 	      String confirmation=receiveConfirmation();
 	      String[] msg = confirmation.split(" ");
 	      
@@ -51,6 +51,7 @@ public class TRS {
 	    		  BufferedReader message = new BufferedReader(new InputStreamReader(connectTCP.getInputStream()));
 	    		  DataOutputStream toclient = new DataOutputStream(connectTCP.getOutputStream());
 	    		  String tobesplit = message.readLine();
+	    		  
 	    		  String[] splitted= tobesplit.split(" ");
 
 	    		  if (splitted[0].equals("exit")){ TCPsocket.close(); break; }
@@ -63,7 +64,8 @@ public class TRS {
 	    			  }
 	    			  
 	    			  else if (splitted[1].equals("f")){
-	    			  		int size = Integer.parseInt(splitted[3]);
+                            
+	    			  		int size =Integer.parseInt("copy"+splitted[3]);
 	    			  		File file = new File(splitted[2]);
 	    			  		FileOutputStream fos = new FileOutputStream(file);
 	    			  		fos.write(splitted[4].getBytes());
@@ -93,13 +95,13 @@ public class TRS {
 	   }
 
 
-public static void register(String language,InetAddress IPAddress, int TRSport,int TCSport){
+public static void register(String language,InetAddress TCSIP, InetAddress IPAddress, int TRSport,int TCSport){
 	
     String tosend= new String();
     tosend="SRG "+ language +" "+IPAddress.getHostAddress()+" "+TRSport+"\n";
     System.out.println(tosend);
     sendData = tosend.getBytes();
-    DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, TCSport);
+    DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, TCSIP, TCSport);
     try {
 		clientSocket.send(sendPacket);
 	} catch (IOException e) {
