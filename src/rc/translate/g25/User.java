@@ -81,7 +81,6 @@ public class User {
 		String[] split = response.replaceAll("\n", "").split(" ");
 		
 		if(!split[0].equals("TRR")){
-			System.out.println("REQUEST: Response header error, expected 'TRR', received '" + split[0] + "'");
 			throw new TRRException(split[0]);
 		}
 		
@@ -156,6 +155,7 @@ public class User {
         		}
 
         	}
+        	
         	else if(split[0].equals("request")){
         		if(split.length < 4){
         			System.out.println("REQUEST: Arguments error");
@@ -220,7 +220,6 @@ public class User {
 								e.printStackTrace();
 							} catch (TRRException e) {
 								System.out.println("REQUEST: Response header error, expected 'TRR', received '" + e.getInput() + "'");
-								
 							} catch (UNREOFException e) {
 								System.out.println("REQUEST: Invalid language");
 								e.printStackTrace();
