@@ -1,16 +1,12 @@
 package rc.translate.g25;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.file.Files;
@@ -53,6 +49,20 @@ public class TRSNode {
 		this.address=address;
 		
 	}
+	
+	public static byte[] receiveData(DataInputStream is) throws IOException {
+		byte[] inputData = new byte[1024];
+		is.read(inputData);
+		return inputData;
+	}
+	
+	public static synchronized void sendData(DataOutputStream os, byte[] byteData) throws IOException {
+        if (byteData == null) {
+        	return;
+        }
+        os.write(byteData);
+        os.flush();
+	}
 
 	public String sendTCPMessage(String message) throws IOException{
 		Socket socket = new Socket(this.address, this.port);
@@ -60,12 +70,9 @@ public class TRSNode {
 		 DataInputStream dis = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
          DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
          
-         dos.write(message.getBytes());
-         dos.flush();
+         sendData(dos, message.getBytes());
          
-         byte[] inputData = new byte[1024];
-         dis.read(inputData);
-         
+         byte[] inputData = receiveData(dis);
          socket.close();
          return new String(inputData).trim();
 	}
@@ -78,18 +85,43 @@ public class TRSNode {
         
         File file = new File(path);
         
-        dos.write(("TRQ f " + file.getName() + " " + file.length() + " ").getBytes());
-        dos.flush();
+        sendData(dos, ("TRQ f " + file.getName() + " " + file.length() + " ").getBytes());
         
         byte[] fileBytes = Files.readAllBytes(file.toPath());
         dos.write(fileBytes);
         dos.write("\n".getBytes());
         dos.flush();
-        
-        byte[] inputData = new byte[1024];
-        dis.read(inputData);
-        
+
+        byte[] byteData = receiveData(dis);
+        String clientRequestMessage = new String(byteData).trim();
+        String[] split = clientRequestMessage.split(" ");
+        if(split[0].equals("TRR")){
+        	if(split[1].equals("f")){
+        		String filename = split[2];
+        		int filesize = Integer.parseInt(split[3]);
+        		
+        		byte[] newFileBytes = new byte[filesize];
+    			byte[] buffer = null;
+    			for(int i = 0; i < filesize; i++){
+    				if(i%1024 == 0){
+    					buffer = receiveData(dis);
+    				}
+    				newFileBytes[i] = buffer[i%1024];
+    			}
+    			
+        		FileOutputStream fos = new FileOutputStream(filename);
+        		fos.write(newFileBytes);
+        		fos.close();
+        		
+        		newFileBytes=null;
+        		buffer=null;
+                fileBytes=null;
+                socket.close();
+                return filename;
+        	}
+        	
+        }
         socket.close();
-        return "hello";
+        return null;
 	}
 }

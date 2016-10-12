@@ -14,9 +14,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -159,6 +157,7 @@ public class TRSBC {
 			socket = new ServerSocket(TRSport);
             
             while (true) {
+            	boolean t = true;
             	Socket connectionSocket = socket.accept();
                 DataInputStream dis = new DataInputStream(new BufferedInputStream(connectionSocket.getInputStream()));
                 DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(connectionSocket.getOutputStream()));
@@ -193,7 +192,7 @@ public class TRSBC {
                 		String filename = split[2];
                 		int filesize = Integer.parseInt(split[3]);
                 		
-                		if(files.get(filename) != null){
+                		if(files.get(filename) != null){	
                 			byte[] file = new byte[filesize];
                 			byte[] buffer = null;
                 			for(int i = 0; i < filesize; i++){
@@ -202,16 +201,26 @@ public class TRSBC {
                 				}
                 				file[i] = buffer[i%1024];
                 			}
-                    		
-                			DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
-                			Date date = new Date();
                 			
-                    		FileOutputStream fos = new FileOutputStream("trs-received-"+dateFormat.format(date)+"-"+filename);
+                    		FileOutputStream fos = new FileOutputStream(filename);
                     		fos.write(file);
                     		fos.close();
                     		
                     		file=null;
                     		buffer=null;
+                    		
+                    		File sendFile = new File(files.get(filename));
+                            
+                            dos.write(("TRR f " + sendFile.getName() + " " + sendFile.length() + " ").getBytes());
+                            dos.flush();
+                            
+                            byte[] fileBytes = Files.readAllBytes(sendFile.toPath());
+                            dos.write(fileBytes);
+                            dos.write("\n".getBytes());
+                            dos.flush();
+                            t=false;
+                            fileBytes=null;
+                            System.out.println("[TRS --> User] TRR f " + sendFile.getName() + " " + sendFile.length() + " ");
                 		}
                 		else{
                 			clientData = "TRR NTA\n";
@@ -220,9 +229,11 @@ public class TRSBC {
                 	}
                 }
 
-                // Sending Response to Client
-                sendData(dos, clientData.getBytes());
-                System.out.println("[TRS --> User] " + clientData.replace("\n", ""));
+                if(t){
+	                // Sending Response to Client
+	                sendData(dos, clientData.getBytes());
+	                System.out.println("[TRS --> User] " + clientData.replace("\n", ""));
+                }
             }
 			
 			
