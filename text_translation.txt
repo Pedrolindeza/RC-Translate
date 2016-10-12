@@ -30,7 +30,7 @@ legs pernas
 flower flor
 wheel roda
 basket cesto
-fragile facil
+fragile fragil
 yellow amarelo
 red vermelho
 brown castanho
