@@ -75,13 +75,21 @@ public class User {
 	    return response;
 	}
 	
-	private static String[] translateWords(String[] words, TRSNode node) throws TRRException, IOException{
+	private static String[] translateWords(String[] words, TRSNode node) throws TRRException, IOException, TRRNTAException, TRRERRException{
 		
 		String response = node.sendTCPMessage("TRQ t " + words.length + " " + implode(" ", words) + "\n");
 		String[] split = response.replaceAll("\n", "").split(" ");
 		
 		if(!split[0].equals("TRR")){
 			throw new TRRException(split[0]);
+		}
+		
+		if(split[1].equals("NTA")){
+			throw new TRRNTAException();
+		}
+		
+		if(split[1].equals("ERR")){
+			throw new TRRERRException();
 		}
 		
 		String[] result = new String[split.length-3];
@@ -93,7 +101,7 @@ public class User {
 		return result;
 	}
 	
-	private static String translateFile(String filepath, TRSNode node) throws IOException{
+	private static String translateFile(String filepath, TRSNode node) throws IOException, TRRERRException, TRRNTAException{
 		File f = new File(filepath);
 		
 		if(!f.exists() || f.isDirectory()){
@@ -219,6 +227,10 @@ public class User {
 								e.printStackTrace();
 							} catch (UNRERRException e) {
 								System.out.println("REQUEST: Invalid request");
+							} catch (TRRERRException e) {
+								System.out.println("REQUEST: TCS sent TRR ERR");
+							} catch (TRRNTAException e) {
+								System.out.println("REQUEST: No translation available");
 							}
             		    }
             		});
@@ -240,6 +252,6 @@ public class User {
         	}
         }
 
-        return;
+        System.exit(0);
 	}
 }

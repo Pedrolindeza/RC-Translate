@@ -21,7 +21,7 @@ import java.util.Scanner;
 import rc.translate.g25.exception.SRGNOKException;
 import rc.translate.g25.exception.SRRERRException;
 
-public class TRSBC {
+public class TRS {
 	private static String TCSname = "127.0.0.1";
 	private static int TCSport = 58025;
 	private static String TRSname;

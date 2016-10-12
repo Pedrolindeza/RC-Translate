@@ -11,6 +11,9 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.file.Files;
 
+import rc.translate.g25.exception.TRRERRException;
+import rc.translate.g25.exception.TRRNTAException;
+
 public class TRSNode {
 	private String language;
 	private InetAddress address;
@@ -77,7 +80,7 @@ public class TRSNode {
          return new String(inputData).trim();
 	}
 	
-	public String sendFile(String path) throws IOException {
+	public String sendFile(String path) throws IOException, TRRERRException, TRRNTAException {
 		Socket socket = new Socket(this.address, this.port);
 		
 		DataInputStream dis = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
@@ -118,6 +121,14 @@ public class TRSNode {
                 fileBytes=null;
                 socket.close();
                 return filename;
+        	}
+        	else if(split[1].equals("ERR")){
+                socket.close();
+        		throw new TRRERRException();
+        	}
+        	else if(split[1].equals("NTA")){
+                socket.close();
+        		throw new TRRNTAException();
         	}
         	
         }
